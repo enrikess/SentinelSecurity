@@ -1,10 +1,9 @@
 <?php
 
 use App\Http\Controllers\Security\MenuController;
-use App\Http\Controllers\Security\UserController;
-use App\Http\Controllers\Security\RoleController;
 use App\Http\Controllers\Security\PermissionController;
-
+use App\Http\Controllers\Security\RoleController;
+use App\Http\Controllers\Security\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
@@ -36,7 +35,6 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:menus.eliminar')
         ->name('menus.destroy');
 
-
     // Rutas para la gestión de usuarios
     Route::get('/usuarios', [UserController::class, 'index'])
         ->middleware('permission:usuarios.listar')
@@ -62,7 +60,6 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:usuarios.eliminar')
         ->name('usuarios.destroy');
 
-
     // Rutas para la gestión de roles
     Route::get('/roles', [RoleController::class, 'index'])
         ->name('roles.index')
@@ -87,7 +84,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
         ->name('roles.destroy')
         ->middleware('permission:roles.eliminar');
-
 
     // Rutas para la gestión de permisos
     Route::get('/permisos', [PermissionController::class, 'index'])

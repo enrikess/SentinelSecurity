@@ -32,7 +32,6 @@ class UserController extends Controller
         ]);
     }
 
-
     public function create(): Response
     {
         return Inertia::render('security/usuarios/create', [
@@ -51,7 +50,6 @@ class UserController extends Controller
                 ]),
         ]);
     }
-
 
     public function store(Request $request): RedirectResponse
     {
@@ -190,7 +188,7 @@ class UserController extends Controller
                 'required',
                 'email',
                 'max:255',
-                'unique:users,email,' . $usuario->id,
+                'unique:users,email,'.$usuario->id,
             ],
 
             'password' => [
@@ -234,7 +232,7 @@ class UserController extends Controller
         $usuario->name = $validated['name'];
         $usuario->email = $validated['email'];
 
-        if (!empty($validated['password'])) {
+        if (! empty($validated['password'])) {
             $usuario->password = Hash::make(
                 $validated['password']
             );

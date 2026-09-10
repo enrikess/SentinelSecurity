@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -15,8 +16,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasRoles, HasPermissions, Notifiable, SoftDeletes {
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, HasPermissions, HasRoles, Notifiable, SoftDeletes {
         HasPermissions::permissions as permissionsViaTrait;
     }
 
@@ -210,7 +211,7 @@ class User extends Authenticatable
      * Reemplaza los permisos directos del modelo con estado allow/deny.
      *
      * @param  list<int>  $allowed  IDs de permisos a otorgar (allow)
-     * @param  list<int>  $denied   IDs de permisos a denegar (deny)
+     * @param  list<int>  $denied  IDs de permisos a denegar (deny)
      */
     public function syncPermissionsWithStatus(array $allowed = [], array $denied = []): static
     {
