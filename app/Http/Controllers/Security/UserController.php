@@ -95,6 +95,16 @@ class UserController extends Controller
                 'integer',
                 'exists:security_permissions,id',
             ],
+
+            'denied_permissions' => [
+                'nullable',
+                'array',
+            ],
+
+            'denied_permissions.*' => [
+                'integer',
+                'exists:security_permissions,id',
+            ],
         ]);
 
         $user = User::create([
@@ -116,15 +126,14 @@ class UserController extends Controller
         );
 
         /*
-         * PERMISOS DIRECTOS
+         * PERMISOS DIRECTOS (allow / deny)
          *
          * También son independientes de los roles.
+         * Los permisos denegados anulan los permisos de los roles.
          */
-        $user->syncPermissions(
-            Permission::whereIn(
-                'id',
-                $validated['permissions'] ?? []
-            )->get()
+        $user->syncPermissionsWithStatus(
+            $validated['permissions'] ?? [],
+            $validated['denied_permissions'] ?? []
         );
 
         return to_route('usuarios.index')
@@ -161,6 +170,8 @@ class UserController extends Controller
             'selectedPermissions' => $usuario->permissions
                 ->pluck('id')
                 ->values(),
+
+            'deniedPermissions' => $usuario->deniedPermissionIds(),
         ]);
     }
 
@@ -208,6 +219,16 @@ class UserController extends Controller
                 'integer',
                 'exists:security_permissions,id',
             ],
+
+            'denied_permissions' => [
+                'nullable',
+                'array',
+            ],
+
+            'denied_permissions.*' => [
+                'integer',
+                'exists:security_permissions,id',
+            ],
         ]);
 
         $usuario->name = $validated['name'];
@@ -228,11 +249,14 @@ class UserController extends Controller
             )->get()
         );
 
-        $usuario->syncPermissions(
-            Permission::whereIn(
-                'id',
-                $validated['permissions'] ?? []
-            )->get()
+        /*
+         * PERMISOS DIRECTOS (allow / deny)
+         *
+         * Los permisos denegados anulan los permisos de los roles.
+         */
+        $usuario->syncPermissionsWithStatus(
+            $validated['permissions'] ?? [],
+            $validated['denied_permissions'] ?? []
         );
 
         return to_route('usuarios.index')
