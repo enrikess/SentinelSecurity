@@ -391,8 +391,6 @@ export default function Edit({ user, roles, permissions, selectedRoles, selected
                             ) : (
                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                     {Object.entries(groupedPermissions).map(([group, groupPermissions]) => {
-                                        const checked = isGroupChecked(groupPermissions);
-
                                         return (
                                             <Card key={group} className="shadow-none transition">
                                                 <CardHeader className="border-b bg-muted/20 pb-3">
