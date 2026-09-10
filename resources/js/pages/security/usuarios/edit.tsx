@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     PermissionStatus,
-    TriStateButtons,
     TriStateCheckbox,
     TriStateLegend,
 } from '@/components/security/usuarios/tri-state-permission';
@@ -455,33 +454,26 @@ export default function Edit({ user, roles, permissions, selectedRoles, selected
                                                                     setPermissionStatus(permission.id, next);
                                                                 }}
                                                                 className={cn(
-                                                                    'flex items-center justify-between gap-2 rounded-md border p-2 transition cursor-pointer select-none',
+                                                                    'flex items-center gap-2.5 rounded-md border p-2 transition cursor-pointer select-none',
                                                                     status === 'allow' && 'border-emerald-300 bg-emerald-50/60 dark:border-emerald-900/60 dark:bg-emerald-950/20',
                                                                     status === 'deny' && 'border-destructive/30 bg-destructive/5 dark:border-destructive/40 dark:bg-destructive/10',
                                                                     status === 'none' && 'border-border/60 bg-card hover:bg-muted/40',
                                                                 )}
                                                             >
-                                                                <div className="flex items-center gap-2 min-w-0 flex-1">
-                                                                    <TriStateCheckbox
-                                                                        status={status}
-                                                                        onChange={(next) => setPermissionStatus(permission.id, next)}
-                                                                    />
-                                                                    <span
-                                                                        className={cn(
-                                                                            'truncate text-xs font-medium capitalize',
-                                                                            status === 'allow' && 'text-emerald-900 dark:text-emerald-300 font-semibold',
-                                                                            status === 'deny' && 'text-destructive font-semibold line-through decoration-destructive/60',
-                                                                            status === 'none' && 'text-foreground',
-                                                                        )}
-                                                                    >
-                                                                        {getPermissionName(permission.name)}
-                                                                    </span>
-                                                                </div>
-
-                                                                <TriStateButtons
+                                                                <TriStateCheckbox
                                                                     status={status}
                                                                     onChange={(next) => setPermissionStatus(permission.id, next)}
                                                                 />
+                                                                <span
+                                                                    className={cn(
+                                                                        'truncate text-xs font-medium capitalize flex-1',
+                                                                        status === 'allow' && 'text-emerald-900 dark:text-emerald-300 font-semibold',
+                                                                        status === 'deny' && 'text-destructive font-semibold line-through decoration-destructive/60',
+                                                                        status === 'none' && 'text-foreground',
+                                                                    )}
+                                                                >
+                                                                    {getPermissionName(permission.name)}
+                                                                </span>
                                                             </div>
                                                         );
                                                     })}

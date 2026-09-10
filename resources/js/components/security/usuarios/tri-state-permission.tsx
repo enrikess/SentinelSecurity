@@ -53,61 +53,6 @@ export function TriStateCheckbox({ status, onChange, className, size = "md" }: T
     );
 }
 
-interface TriStateButtonsProps {
-    status: PermissionStatus;
-    onChange: (nextStatus: PermissionStatus) => void;
-    className?: string;
-}
-
-/**
- * Control segmentado de 3 estados (+, -, vacío) para selección directa.
- */
-export function TriStateButtons({ status, onChange, className }: TriStateButtonsProps) {
-    return (
-        <div
-            className={cn("inline-flex items-center rounded-md border border-input bg-muted/40 p-0.5 text-xs select-none shrink-0", className)}
-            onClick={(e) => e.stopPropagation()}
-        >
-            <button
-                type="button"
-                onClick={() => onChange("none")}
-                title="Sin asignar (Vacío)"
-                className={cn(
-                    "flex h-6 items-center gap-1 rounded px-2 font-medium transition-all cursor-pointer",
-                    status === "none" ? "bg-background text-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground",
-                )}
-            >
-                <span className="text-muted-foreground">∅</span>
-                <span className="hidden sm:inline text-[11px]">Vacío</span>
-            </button>
-            <button
-                type="button"
-                onClick={() => onChange("allow")}
-                title="Permitir (+)"
-                className={cn(
-                    "flex h-6 items-center gap-1 rounded px-2 font-medium transition-all cursor-pointer",
-                    status === "allow" ? "bg-emerald-600 text-white shadow-xs font-semibold" : "text-muted-foreground hover:text-emerald-600",
-                )}
-            >
-                <Plus className="size-3 stroke-[3]" />
-                <span className="hidden sm:inline text-[11px]">Permitir</span>
-            </button>
-            <button
-                type="button"
-                onClick={() => onChange("deny")}
-                title="Denegar (-)"
-                className={cn(
-                    "flex h-6 items-center gap-1 rounded px-2 font-medium transition-all cursor-pointer",
-                    status === "deny" ? "bg-destructive text-destructive-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-destructive",
-                )}
-            >
-                <Minus className="size-3 stroke-[3]" />
-                <span className="hidden sm:inline text-[11px]">Denegar</span>
-            </button>
-        </div>
-    );
-}
-
 /**
  * Leyenda explicativa de los 3 estados (+, -, vacío).
  */
