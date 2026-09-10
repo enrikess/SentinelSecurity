@@ -7,9 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    PermissionStatus,
+    TriStateButtons,
+    TriStateCheckbox,
+    TriStateLegend,
+} from '@/components/security/usuarios/tri-state-permission';
+import { cn } from '@/lib/utils';
 
-import { ArrowLeft, Check, Shield, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, Check, Minus, Plus, RotateCcw, Shield, UserPlus, Users } from 'lucide-react';
 
 interface Role {
     id: number;
@@ -157,42 +163,26 @@ export default function Create({ roles, permissions }: Props) {
 
     /*
     |--------------------------------------------------------------------------
-    | Seleccionar todos los permisos del grupo
+    | Acciones de grupo (allow, deny, vaciar)
     |--------------------------------------------------------------------------
     */
 
-    const toggleGroup = (groupPermissions: Permission[], checked: boolean) => {
-        const permissionIds = groupPermissions.map((permission) => permission.id);
+    const setGroupStatus = (groupPermissions: Permission[], status: PermissionStatus) => {
+        const groupIds = groupPermissions.map((permission) => permission.id);
+        const nextPermissions = data.permissions.filter((id) => !groupIds.includes(id));
+        const nextDenied = data.denied_permissions.filter((id) => !groupIds.includes(id));
 
-        if (checked) {
-            setData({
-                ...data,
-                permissions: Array.from(new Set([...data.permissions, ...permissionIds])),
-                // Al marcar "Todo" se quita el deny del grupo.
-                denied_permissions: data.denied_permissions.filter((id) => !permissionIds.includes(id)),
-            });
-
-            return;
+        if (status === 'allow') {
+            nextPermissions.push(...groupIds);
+        } else if (status === 'deny') {
+            nextDenied.push(...groupIds);
         }
 
         setData({
             ...data,
-            permissions: data.permissions.filter((id) => !permissionIds.includes(id)),
+            permissions: nextPermissions,
+            denied_permissions: nextDenied,
         });
-    };
-
-    /*
-    |--------------------------------------------------------------------------
-    | Estado del grupo
-    |--------------------------------------------------------------------------
-    */
-
-    const isGroupChecked = (groupPermissions: Permission[]) => {
-        if (groupPermissions.length === 0) {
-            return false;
-        }
-
-        return groupPermissions.every((permission) => data.permissions.includes(permission.id));
     };
 
     /*
@@ -367,15 +357,19 @@ export default function Create({ roles, permissions }: Props) {
                     ===================================================== */}
 
                     <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Users className="size-5" />
-                                Permisos directos
-                            </CardTitle>
+                        <CardHeader className="space-y-3">
+                            <div className="flex flex-col gap-1">
+                                <CardTitle className="flex items-center gap-2">
+                                    <Users className="size-5" />
+                                    Permisos directos
+                                </CardTitle>
 
-                            <CardDescription>
-                                Asigna permisos directamente al usuario. Los permisos denegados anulan lo que otorgan los roles.
-                            </CardDescription>
+                                <CardDescription>
+                                    Asigna permisos directamente al usuario. Los permisos denegados (-) anulan lo que otorgan los roles. Haz clic en la casilla para alternar entre <strong>Vacío ➔ + ➔ -</strong> o usa los botones rápidos.
+                                </CardDescription>
+                            </div>
+
+                            <TriStateLegend />
                         </CardHeader>
 
                         <CardContent>
@@ -389,9 +383,9 @@ export default function Create({ roles, permissions }: Props) {
                                         const checked = isGroupChecked(groupPermissions);
 
                                         return (
-                                            <Card key={group} className={`shadow-none transition ${checked ? 'border-primary/50' : ''} `}>
-                                                <CardHeader className="pb-3">
-                                                    <div className="flex items-start justify-between gap-3">
+                                            <Card key={group} className="shadow-none transition">
+                                                <CardHeader className="border-b bg-muted/20 pb-3">
+                                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                                         <div className="min-w-0">
                                                             <CardTitle className="truncate text-base capitalize">
                                                                 {group.replace(/_/g, ' ')}
@@ -400,47 +394,85 @@ export default function Create({ roles, permissions }: Props) {
                                                             <CardDescription className="text-xs">{groupPermissions.length} permisos</CardDescription>
                                                         </div>
 
-                                                        <label className="flex shrink-0 cursor-pointer items-center gap-2 text-xs font-medium">
-                                                            <Checkbox
-                                                                checked={checked}
-                                                                onCheckedChange={(value) => toggleGroup(groupPermissions, value === true)}
-                                                            />
-                                                            Todo
-                                                        </label>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7 px-1.5 text-[11px] font-semibold text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40"
+                                                                onClick={() => setGroupStatus(groupPermissions, 'allow')}
+                                                                title="Permitir todos (+)"
+                                                            >
+                                                                <Plus className="mr-0.5 size-3 stroke-[3]" />
+                                                                Todos
+                                                            </Button>
+
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7 px-1.5 text-[11px] font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                                onClick={() => setGroupStatus(groupPermissions, 'deny')}
+                                                                title="Denegar todos (-)"
+                                                            >
+                                                                <Minus className="mr-0.5 size-3 stroke-[3]" />
+                                                                Todos
+                                                            </Button>
+
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7 px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+                                                                onClick={() => setGroupStatus(groupPermissions, 'none')}
+                                                                title="Vaciar / Sin asignar"
+                                                            >
+                                                                <RotateCcw className="mr-0.5 size-3" />
+                                                                Vaciar
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 </CardHeader>
 
-                                                <CardContent className="space-y-1">
+                                                <CardContent className="space-y-1.5 pt-3">
                                                     {groupPermissions.map((permission) => {
                                                         const status = getPermissionStatus(permission.id);
 
                                                         return (
                                                             <div
                                                                 key={permission.id}
-                                                                className="hover:bg-muted/50 flex items-center justify-between gap-3 rounded-md px-3 py-2 transition"
+                                                                onClick={() => {
+                                                                    const next = status === 'none' ? 'allow' : status === 'allow' ? 'deny' : 'none';
+                                                                    setPermissionStatus(permission.id, next);
+                                                                }}
+                                                                className={cn(
+                                                                    'flex items-center justify-between gap-2 rounded-md border p-2 transition cursor-pointer select-none',
+                                                                    status === 'allow' && 'border-emerald-300 bg-emerald-50/60 dark:border-emerald-900/60 dark:bg-emerald-950/20',
+                                                                    status === 'deny' && 'border-destructive/30 bg-destructive/5 dark:border-destructive/40 dark:bg-destructive/10',
+                                                                    status === 'none' && 'border-border/60 bg-card hover:bg-muted/40',
+                                                                )}
                                                             >
-                                                                <span className="text-sm capitalize">{getPermissionName(permission.name)}</span>
+                                                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                                                    <TriStateCheckbox
+                                                                        status={status}
+                                                                        onChange={(next) => setPermissionStatus(permission.id, next)}
+                                                                    />
+                                                                    <span
+                                                                        className={cn(
+                                                                            'truncate text-xs font-medium capitalize',
+                                                                            status === 'allow' && 'text-emerald-900 dark:text-emerald-300 font-semibold',
+                                                                            status === 'deny' && 'text-destructive font-semibold line-through decoration-destructive/60',
+                                                                            status === 'none' && 'text-foreground',
+                                                                        )}
+                                                                    >
+                                                                        {getPermissionName(permission.name)}
+                                                                    </span>
+                                                                </div>
 
-                                                                <Select
-                                                                    value={status}
-                                                                    onValueChange={(value) =>
-                                                                        setPermissionStatus(permission.id, value as PermissionStatus)
-                                                                    }
-                                                                >
-                                                                    <SelectTrigger className="h-8 w-32">
-                                                                        <SelectValue />
-                                                                    </SelectTrigger>
-
-                                                                    <SelectContent>
-                                                                        <SelectItem value="none">Sin asignar</SelectItem>
-
-                                                                        <SelectItem value="allow">Permitir</SelectItem>
-
-                                                                        <SelectItem value="deny" className="text-destructive">
-                                                                            Denegar
-                                                                        </SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
+                                                                <TriStateButtons
+                                                                    status={status}
+                                                                    onChange={(next) => setPermissionStatus(permission.id, next)}
+                                                                />
                                                             </div>
                                                         );
                                                     })}
