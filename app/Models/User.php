@@ -10,12 +10,15 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Spatie\Permission\Contracts\Permission as PermissionContract;
+use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasRoles, Notifiable, SoftDeletes;
+    use HasFactory, HasRoles, HasPermissions, Notifiable, SoftDeletes {
+        HasPermissions::permissions as permissionsViaTrait;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -77,7 +80,7 @@ class User extends Authenticatable
      */
     public function permissions(): BelongsToMany
     {
-        return parent::permissions()
+        return $this->permissionsViaTrait()
             ->withPivot('is_denied');
     }
 
