@@ -15,8 +15,7 @@ class MenuController extends Controller
 {
     public function __construct(
         private readonly MenuService $menuService
-    ) {
-    }
+    ) {}
 
     /**
      * Árbol de menú para el usuario autenticado.
@@ -150,13 +149,13 @@ class MenuController extends Controller
          */
         if (
             $validated['type'] === MenuType::MENU->value &&
-            !empty($validated['parent_id'])
+            ! empty($validated['parent_id'])
         ) {
             $parent = Menu::find($validated['parent_id']);
 
             if (
-                !$parent ||
-                !in_array(
+                ! $parent ||
+                ! in_array(
                     $parent->type->value,
                     [MenuType::SECTION->value, MenuType::GROUP->value],
                     true
@@ -164,8 +163,7 @@ class MenuController extends Controller
             ) {
                 return back()
                     ->withErrors([
-                        'parent_id' =>
-                            'El padre seleccionado debe ser una sección o grupo.',
+                        'parent_id' => 'El padre seleccionado debe ser una sección o grupo.',
                     ])
                     ->withInput();
             }
@@ -259,7 +257,7 @@ class MenuController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'unique:security_menus,slug,' . $menu->id,
+                'unique:security_menus,slug,'.$menu->id,
             ],
 
             'route' => [
@@ -295,13 +293,12 @@ class MenuController extends Controller
          * Un menú no puede ser su propio padre.
          */
         if (
-            !empty($validated['parent_id']) &&
+            ! empty($validated['parent_id']) &&
             (int) $validated['parent_id'] === $menu->id
         ) {
             return back()
                 ->withErrors([
-                    'parent_id' =>
-                        'El menú no puede ser su propio padre.',
+                    'parent_id' => 'El menú no puede ser su propio padre.',
                 ])
                 ->withInput();
         }
@@ -328,13 +325,13 @@ class MenuController extends Controller
          */
         if (
             $validated['type'] === MenuType::MENU->value &&
-            !empty($validated['parent_id'])
+            ! empty($validated['parent_id'])
         ) {
             $parent = Menu::find($validated['parent_id']);
 
             if (
-                !$parent ||
-                !in_array(
+                ! $parent ||
+                ! in_array(
                     $parent->type->value,
                     [MenuType::SECTION->value, MenuType::GROUP->value],
                     true
@@ -342,8 +339,7 @@ class MenuController extends Controller
             ) {
                 return back()
                     ->withErrors([
-                        'parent_id' =>
-                            'El padre seleccionado debe ser una sección o grupo.',
+                        'parent_id' => 'El padre seleccionado debe ser una sección o grupo.',
                     ])
                     ->withInput();
             }
@@ -364,8 +360,7 @@ class MenuController extends Controller
         ) {
             return back()
                 ->withErrors([
-                    'type' =>
-                        'No puedes convertir este grupo en menú porque tiene elementos hijos.',
+                    'type' => 'No puedes convertir este grupo en menú porque tiene elementos hijos.',
                 ])
                 ->withInput();
         }
@@ -389,8 +384,7 @@ class MenuController extends Controller
         if ($menu->children()->exists()) {
             return back()
                 ->withErrors([
-                    'delete' =>
-                        'No puedes eliminar este grupo porque contiene menús.',
+                    'delete' => 'No puedes eliminar este grupo porque contiene menús.',
                 ]);
         }
 

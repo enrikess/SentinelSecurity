@@ -39,7 +39,7 @@ class MenuService
                     && $menu->permission !== null
                     && $user->can($menu->permission->name);
 
-                if (!$hasPermission && $children->isEmpty()) {
+                if (! $hasPermission && $children->isEmpty()) {
                     return null;
                 }
 

@@ -2,11 +2,10 @@
 
 namespace App\Models\Security;
 
+use App\Enums\Security\MenuType;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Security\Permission;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Enums\Security\MenuType;
 
 class Menu extends Model
 {
@@ -28,7 +27,6 @@ class Menu extends Model
         'type' => MenuType::class,
         'is_active' => 'boolean',
     ];
-
 
     public function parent(): BelongsTo
     {

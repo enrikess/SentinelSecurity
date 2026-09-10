@@ -21,6 +21,7 @@ class RoleController extends Controller
             'roles' => $roles,
         ]);
     }
+
     /**
      * Formulario para crear un rol.
      */
@@ -60,7 +61,7 @@ class RoleController extends Controller
             'guard_name' => 'web',
         ]);
 
-        if (!empty($validated['permissions'])) {
+        if (! empty($validated['permissions'])) {
             $permissions = Permission::query()
                 ->whereIn('id', $validated['permissions'])
                 ->get();
@@ -105,7 +106,7 @@ class RoleController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'unique:security_roles,name,' . $role->id,
+                'unique:security_roles,name,'.$role->id,
             ],
             'permissions' => [
                 'nullable',
@@ -148,6 +149,7 @@ class RoleController extends Controller
             ->route('roles.index')
             ->with('success', 'Rol eliminado correctamente.');
     }
+
     /**
      * Obtener permisos agrupados por el texto
      * anterior al punto.
