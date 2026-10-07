@@ -3,12 +3,15 @@
 namespace App\Models\Security;
 
 use App\Enums\Security\MenuType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Menu extends Model
 {
+    use HasFactory;
+
     protected $table = 'security_menus';
 
     protected $fillable = [

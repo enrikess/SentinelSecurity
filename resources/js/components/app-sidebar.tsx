@@ -1,12 +1,11 @@
 import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import type { SharedData } from '@/types';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { BookOpen, Folder } from 'lucide-react';
 import AppLogo from './app-logo';
-import type { SharedData } from '@/types';
 import { RecursiveMenu } from './security/recursive-menu';
 
 const footerNavItems: NavItem[] = [
@@ -23,12 +22,7 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-
     const { security } = usePage<SharedData>().props;
-
-console.log(security.menus);
-
-
 
     return (
         <Sidebar collapsible="icon" variant="inset">

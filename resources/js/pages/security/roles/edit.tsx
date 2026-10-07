@@ -1,24 +1,21 @@
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { FormEvent } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 
-import {
-    ArrowLeft,
-    Check,
-    KeyRound,
-    Shield,
-} from 'lucide-react';
+import { permissionGroupColors, type PermissionGroupColor } from '@/components/security/permission-group-colors';
+import { ArrowLeft, Check, CheckCircle2, Loader2, Save, ShieldCheck, Tag } from 'lucide-react';
+
+/*
+|--------------------------------------------------------------------------
+| Tipos
+|--------------------------------------------------------------------------
+*/
 
 interface Permission {
     id: number;
@@ -42,91 +39,76 @@ interface Props {
     permissions: PermissionGroup[];
 }
 
-interface RoleForm {
-    name: string;
-    permissions: number[];
-    [key: string]: any;
-}
+/*
+|--------------------------------------------------------------------------
+| Componente
+|--------------------------------------------------------------------------
+*/
 
-export default function Edit({
-    role,
-    permissions,
-}: Props) {
-    const {
-        data,
-        setData,
-        put,
-        processing,
-        errors,
-    } = useForm<RoleForm>({
+export default function Edit({ role, permissions = [] }: Props) {
+    const { data, setData, put, processing, errors } = useForm({
         name: role.name,
         permissions: role.permissions,
     });
 
-    const togglePermission = (
-        permissionId: number,
-        checked: boolean
-    ) => {
-        if (checked) {
-            setData('permissions', [
-                ...data.permissions,
-                permissionId,
-            ]);
+    /*
+    |--------------------------------------------------------------------------
+    | Seleccionar permiso
+    |--------------------------------------------------------------------------
+    */
 
-            return;
-        }
-
-        setData(
-            'permissions',
-            data.permissions.filter(
-                (id) => id !== permissionId
-            )
-        );
-    };
-
-    const toggleGroup = (
-        groupPermissions: Permission[],
-        checked: boolean
-    ) => {
-        const ids = groupPermissions.map(
-            (permission) => permission.id
-        );
-
-        if (checked) {
+    const togglePermission = (permissionId: number) => {
+        if (data.permissions.includes(permissionId)) {
             setData(
                 'permissions',
-                Array.from(
-                    new Set([
-                        ...data.permissions,
-                        ...ids,
-                    ])
-                )
+                data.permissions.filter((id) => id !== permissionId),
             );
 
             return;
         }
 
-        setData(
-            'permissions',
-            data.permissions.filter(
-                (id) => !ids.includes(id)
-            )
-        );
+        setData('permissions', [...data.permissions, permissionId]);
     };
 
-    const isGroupChecked = (
-        groupPermissions: Permission[]
-    ) => {
-        return (
-            groupPermissions.length > 0 &&
-            groupPermissions.every((permission) =>
-                data.permissions.includes(permission.id)
-            )
-        );
+    /*
+    |--------------------------------------------------------------------------
+    | Seleccionar todos los permisos de un grupo
+    |--------------------------------------------------------------------------
+    */
+
+    const toggleGroup = (group: PermissionGroup) => {
+        const ids = group.permissions.map((permission) => permission.id);
+
+        const allSelected = ids.length > 0 && ids.every((id) => data.permissions.includes(id));
+
+        if (allSelected) {
+            setData(
+                'permissions',
+                data.permissions.filter((id) => !ids.includes(id)),
+            );
+
+            return;
+        }
+
+        setData('permissions', Array.from(new Set([...data.permissions, ...ids])));
     };
 
-    const submit = (e: React.FormEvent) => {
-        e.preventDefault();
+    /*
+    |--------------------------------------------------------------------------
+    | Total permisos
+    |--------------------------------------------------------------------------
+    */
+
+    const totalPermissions = permissions.reduce((total, group) => total + group.permissions.length, 0);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enviar
+    |--------------------------------------------------------------------------
+    */
+
+    const handleSubmit = (event: FormEvent) => {
+        event.preventDefault();
 
         put(`/roles/${role.id}`);
     };
@@ -146,179 +128,259 @@ export default function Edit({
         >
             <Head title={`Editar ${role.name}`} />
 
-            <div className="mx-auto w-full max-w-5xl p-4 sm:p-6">
-                <form
-                    onSubmit={submit}
-                    className="space-y-6"
-                >
-                    {/* Información */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-base">
-                                <Shield className="size-5" />
-                                Información del rol
-                            </CardTitle>
-                        </CardHeader>
+            <form onSubmit={handleSubmit} className="mx-auto w-full max-w-7xl space-y-5 p-4 sm:p-6">
+                {/* ======================================================
+                    HEADER
+                ====================================================== */}
 
-                        <CardContent>
-                            <div className="max-w-xl space-y-2">
-                                <Label htmlFor="name">
-                                    Nombre del rol
-                                </Label>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <div className="bg-primary/10 flex size-9 items-center justify-center rounded-lg">
+                                <ShieldCheck className="text-primary size-5" />
+                            </div>
+
+                            <h1 className="text-xl font-semibold tracking-tight">Editar rol</h1>
+                        </div>
+
+                        <p className="text-muted-foreground mt-1 text-sm">Modifica el nombre y los permisos del rol.</p>
+                    </div>
+
+                    <Button type="button" variant="outline" asChild>
+                        <Link href="/roles">
+                            <ArrowLeft className="mr-2 size-4" />
+                            Volver
+                        </Link>
+                    </Button>
+                </div>
+
+                {/* ======================================================
+                    INFORMACIÓN DEL ROL
+                ====================================================== */}
+
+                <Card>
+                    <CardHeader className="bg-muted/20 border-b pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                            <ShieldCheck className="text-primary size-5" />
+                            Información del rol
+                        </CardTitle>
+
+                        <CardDescription>Define el nombre del rol.</CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="p-4">
+                        <div className="max-w-xl space-y-2">
+                            <Label htmlFor="name">Nombre</Label>
+
+                            <div className="relative">
+                                <Tag className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
 
                                 <Input
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) =>
-                                        setData(
-                                            'name',
-                                            e.target.value
-                                        )
-                                    }
+                                    onChange={(event) => setData('name', event.target.value)}
                                     placeholder="Ej. Administrador"
+                                    className="pl-9"
                                 />
-
-                                {errors.name && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.name}
-                                    </p>
-                                )}
                             </div>
+
+                            {errors.name && <p className="text-destructive text-sm">{errors.name}</p>}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* ======================================================
+                    ENCABEZADO PERMISOS
+                ====================================================== */}
+
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h2 className="text-base font-semibold">Permisos</h2>
+
+                        <p className="text-muted-foreground text-sm">Selecciona los permisos que tendrá este rol.</p>
+                    </div>
+
+                    <div className="bg-primary/10 text-primary inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium">
+                        <CheckCircle2 className="size-3.5" />
+                        {data.permissions.length} de {totalPermissions} seleccionados
+                    </div>
+                </div>
+
+                {/* ======================================================
+                    PERMISOS
+                ====================================================== */}
+
+                {permissions.length === 0 ? (
+                    <Card>
+                        <CardContent className="flex flex-col items-center justify-center px-6 py-14 text-center">
+                            <div className="bg-muted mb-3 flex size-12 items-center justify-center rounded-full">
+                                <ShieldCheck className="text-muted-foreground size-5" />
+                            </div>
+
+                            <h3 className="font-medium">No hay permisos</h3>
+
+                            <p className="text-muted-foreground mt-1 text-sm">No existen permisos registrados en el sistema.</p>
                         </CardContent>
                     </Card>
+                ) : (
+                    <div className="grid gap-5 md:grid-cols-2">
+                        {permissions.map((group, index) => (
+                            <PermissionCard
+                                key={group.name}
+                                group={group}
+                                color={permissionGroupColors[index % permissionGroupColors.length]}
+                                selectedPermissions={data.permissions}
+                                onTogglePermission={togglePermission}
+                                onToggleGroup={toggleGroup}
+                            />
+                        ))}
+                    </div>
+                )}
 
-                    {/* Permisos */}
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center justify-between gap-3">
-                                <div>
-                                    <CardTitle className="flex items-center gap-2 text-base">
-                                        <KeyRound className="size-5" />
-                                        Permisos
-                                    </CardTitle>
+                {errors.permissions && <p className="text-destructive text-sm">{errors.permissions}</p>}
 
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        Administra los permisos asignados
-                                        al rol.
-                                    </p>
+                {/* ======================================================
+                    FOOTER
+                ====================================================== */}
+
+                <Card className="bg-card/95 sticky bottom-4 z-10 border shadow-lg backdrop-blur-md">
+                    <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <span className="text-muted-foreground font-medium">Selección:</span>
+
+                            <Badge variant="outline" className="gap-1 font-semibold">
+                                <CheckCircle2 className="text-primary size-3" />
+                                {data.permissions.length} de {totalPermissions} seleccionados
+                            </Badge>
+                        </div>
+
+                        <div className="flex shrink-0 flex-col-reverse gap-2.5 sm:flex-row">
+                            <Button type="button" variant="outline" asChild>
+                                <Link href="/roles">Cancelar</Link>
+                            </Button>
+
+                            <Button type="submit" disabled={processing} className="font-semibold shadow-xs">
+                                {processing ? (
+                                    <>
+                                        <Loader2 className="mr-2 size-4 animate-spin" />
+                                        Guardando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="mr-2 size-4" />
+                                        Guardar cambios
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </form>
+        </AppLayout>
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| Card de permisos
+|--------------------------------------------------------------------------
+*/
+
+function PermissionCard({
+    group,
+    color,
+    selectedPermissions,
+    onTogglePermission,
+    onToggleGroup,
+}: {
+    group: PermissionGroup;
+    color: PermissionGroupColor;
+    selectedPermissions: number[];
+    onTogglePermission: (permissionId: number) => void;
+    onToggleGroup: (group: PermissionGroup) => void;
+}) {
+    const permissionIds = group.permissions.map((permission) => permission.id);
+
+    const selectedCount = permissionIds.filter((id) => selectedPermissions.includes(id)).length;
+
+    const allSelected = permissionIds.length > 0 && selectedCount === permissionIds.length;
+
+    return (
+        <Card className="overflow-hidden">
+            {/* ======================================================
+                HEADER DE CATEGORÍA
+            ====================================================== */}
+
+            <CardHeader className={color.card}>
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                        <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${color.icon}`}>
+                            <ShieldCheck className="size-5" />
+                        </div>
+
+                        <div className="min-w-0">
+                            <CardTitle className="truncate text-base capitalize">{group.name}</CardTitle>
+
+                            <p className="text-muted-foreground mt-1 text-xs">
+                                {selectedCount} de {group.permissions.length} seleccionados
+                            </p>
+                        </div>
+                    </div>
+
+                    {group.permissions.length > 0 && (
+                        <Button type="button" variant="ghost" size="sm" className="h-8 shrink-0 text-xs" onClick={() => onToggleGroup(group)}>
+                            {allSelected ? 'Quitar todos' : 'Todos'}
+                        </Button>
+                    )}
+                </div>
+            </CardHeader>
+
+            {/* ======================================================
+                LISTADO
+            ====================================================== */}
+
+            <CardContent className="p-0">
+                <div className="divide-y">
+                    {group.permissions.map((permission) => {
+                        const checked = selectedPermissions.includes(permission.id);
+
+                        return (
+                            <button
+                                key={permission.id}
+                                type="button"
+                                onClick={() => onTogglePermission(permission.id)}
+                                className="hover:bg-muted/50 flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors"
+                            >
+                                <div className="flex min-w-0 items-center gap-3">
+                                    <div
+                                        className={`flex size-8 shrink-0 items-center justify-center rounded-md transition-colors ${
+                                            checked ? color.icon : 'bg-muted text-muted-foreground'
+                                        }`}
+                                    >
+                                        {checked ? <Check className="size-4" /> : <ShieldCheck className="size-4" />}
+                                    </div>
+
+                                    <div className="min-w-0">
+                                        <p className={`truncate text-sm ${checked ? 'font-medium' : 'text-muted-foreground'}`}>{permission.action}</p>
+
+                                        <p className="text-muted-foreground truncate text-xs">{permission.name}</p>
+                                    </div>
                                 </div>
 
-                                <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium">
-                                    {data.permissions.length} seleccionados
-                                </span>
-                            </div>
-                        </CardHeader>
+                                {/* CHECKBOX */}
 
-                        <CardContent className="space-y-6">
-                            {permissions.map(
-                                (group, index) => (
-                                    <div
-                                        key={group.name}
-                                        className="space-y-3"
-                                    >
-                                        {index > 0 && (
-                                            <Separator />
-                                        )}
-
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div>
-                                                <h3 className="text-sm font-semibold capitalize">
-                                                    {group.name}
-                                                </h3>
-
-                                                <p className="text-xs text-muted-foreground">
-                                                    {
-                                                        group.permissions
-                                                            .length
-                                                    }{' '}
-                                                    permisos
-                                                </p>
-                                            </div>
-
-                                            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
-                                                <Checkbox
-                                                    checked={isGroupChecked(
-                                                        group.permissions
-                                                    )}
-                                                    onCheckedChange={(
-                                                        checked
-                                                    ) =>
-                                                        toggleGroup(
-                                                            group.permissions,
-                                                            checked === true
-                                                        )
-                                                    }
-                                                />
-
-                                                Todo
-                                            </label>
-                                        </div>
-
-                                        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                                            {group.permissions.map(
-                                                (permission) => (
-                                                    <label
-                                                        key={
-                                                            permission.id
-                                                        }
-                                                        className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
-                                                    >
-                                                        <Checkbox
-                                                            checked={data.permissions.includes(
-                                                                permission.id
-                                                            )}
-                                                            onCheckedChange={(
-                                                                checked
-                                                            ) =>
-                                                                togglePermission(
-                                                                    permission.id,
-                                                                    checked ===
-                                                                        true
-                                                                )
-                                                            }
-                                                        />
-
-                                                        <span className="text-sm">
-                                                            {
-                                                                permission.action
-                                                            }
-                                                        </span>
-                                                    </label>
-                                                )
-                                            )}
-                                        </div>
-                                    </div>
-                                )
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* Botones */}
-                    <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            asChild
-                        >
-                            <Link href="/roles">
-                                <ArrowLeft className="mr-2 size-4" />
-                                Cancelar
-                            </Link>
-                        </Button>
-
-                        <Button
-                            type="submit"
-                            disabled={processing}
-                        >
-                            <Check className="mr-2 size-4" />
-
-                            {processing
-                                ? 'Guardando...'
-                                : 'Guardar cambios'}
-                        </Button>
-                    </div>
-                </form>
-            </div>
-        </AppLayout>
+                                <div
+                                    className={`flex size-5 shrink-0 items-center justify-center rounded border transition-colors ${
+                                        checked ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-background'
+                                    }`}
+                                >
+                                    {checked && <Check className="size-3.5" />}
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
     );
 }

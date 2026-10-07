@@ -2,33 +2,30 @@ import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent, useMemo, useState } from 'react';
 
+import { permissionGroupColors } from '@/components/security/permission-group-colors';
+import { PermissionStatus, PermissionStatusBadge, TriStateCheckbox, TriStateLegend } from '@/components/security/usuarios/tri-state-permission';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    PermissionStatus,
-    PermissionStatusBadge,
-    TriStateCheckbox,
-    TriStateLegend,
-} from '@/components/security/usuarios/tri-state-permission';
 import { cn } from '@/lib/utils';
 
 import {
     ArrowLeft,
-    Check,
     CheckCircle2,
-    FolderLock,
     KeyRound,
     Loader2,
+    LockKeyhole,
+    Mail,
     Minus,
     Plus,
     RotateCcw,
     Search,
     Shield,
     ShieldCheck,
+    User,
     UserPlus,
     Users,
     X,
@@ -176,10 +173,7 @@ export default function Create({ roles, permissions }: Props) {
         const filtered: Record<string, Permission[]> = {};
         for (const [group, perms] of Object.entries(groupedPermissions)) {
             const matches = perms.filter(
-                (p) =>
-                    p.name.toLowerCase().includes(q) ||
-                    getPermissionName(p.name).toLowerCase().includes(q) ||
-                    group.toLowerCase().includes(q),
+                (p) => p.name.toLowerCase().includes(q) || getPermissionName(p.name).toLowerCase().includes(q) || group.toLowerCase().includes(q),
             );
             if (matches.length > 0) {
                 filtered[group] = matches;
@@ -269,10 +263,16 @@ export default function Create({ roles, permissions }: Props) {
                     ===================================================== */}
 
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight">Crear usuario</h1>
+                        <div className="flex min-w-0 items-center gap-3">
+                            <div className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-lg">
+                                <UserPlus className="text-primary size-5" />
+                            </div>
 
-                            <p className="text-muted-foreground text-sm">Registra un usuario y configura sus roles y permisos.</p>
+                            <div className="min-w-0">
+                                <h1 className="text-xl font-semibold tracking-tight">Crear usuario</h1>
+
+                                <p className="text-muted-foreground mt-0.5 text-sm">Registra un usuario y configura sus roles y permisos.</p>
+                            </div>
                         </div>
 
                         <Button type="button" variant="outline" asChild>
@@ -288,22 +288,33 @@ export default function Create({ roles, permissions }: Props) {
                     ===================================================== */}
 
                     <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <UserPlus className="size-5" />
-                                Datos del usuario
-                            </CardTitle>
+                        <CardHeader className="bg-muted/20 space-y-4 border-b pb-4">
+                            <div className="space-y-1">
+                                <CardTitle className="flex items-center gap-2 text-lg">
+                                    <UserPlus className="text-primary size-5" />
+                                    Datos del usuario
+                                </CardTitle>
 
-                            <CardDescription>Información básica para acceder al sistema.</CardDescription>
+                                <CardDescription>Información básica para acceder al sistema.</CardDescription>
+                            </div>
                         </CardHeader>
 
-                        <CardContent className="grid gap-5 sm:grid-cols-2">
+                        <CardContent className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
                             {/* Nombre */}
 
                             <div className="space-y-2">
                                 <Label htmlFor="name">Nombre</Label>
 
-                                <Input id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} placeholder="Nombre completo" />
+                                <div className="relative">
+                                    <User className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                                    <Input
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        placeholder="Nombre completo"
+                                        className="pl-9"
+                                    />
+                                </div>
 
                                 {errors.name && <p className="text-destructive text-sm">{errors.name}</p>}
                             </div>
@@ -313,13 +324,17 @@ export default function Create({ roles, permissions }: Props) {
                             <div className="space-y-2">
                                 <Label htmlFor="email">Correo electrónico</Label>
 
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    placeholder="usuario@correo.com"
-                                />
+                                <div className="relative">
+                                    <Mail className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={data.email}
+                                        onChange={(e) => setData('email', e.target.value)}
+                                        placeholder="usuario@correo.com"
+                                        className="pl-9"
+                                    />
+                                </div>
 
                                 {errors.email && <p className="text-destructive text-sm">{errors.email}</p>}
                             </div>
@@ -329,13 +344,17 @@ export default function Create({ roles, permissions }: Props) {
                             <div className="space-y-2">
                                 <Label htmlFor="password">Contraseña</Label>
 
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    placeholder="••••••••"
-                                />
+                                <div className="relative">
+                                    <LockKeyhole className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        value={data.password}
+                                        onChange={(e) => setData('password', e.target.value)}
+                                        placeholder="••••••••"
+                                        className="pl-9"
+                                    />
+                                </div>
 
                                 {errors.password && <p className="text-destructive text-sm">{errors.password}</p>}
                             </div>
@@ -345,13 +364,17 @@ export default function Create({ roles, permissions }: Props) {
                             <div className="space-y-2">
                                 <Label htmlFor="password_confirmation">Confirmar contraseña</Label>
 
-                                <Input
-                                    id="password_confirmation"
-                                    type="password"
-                                    value={data.password_confirmation}
-                                    onChange={(e) => setData('password_confirmation', e.target.value)}
-                                    placeholder="••••••••"
-                                />
+                                <div className="relative">
+                                    <LockKeyhole className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                                    <Input
+                                        id="password_confirmation"
+                                        type="password"
+                                        value={data.password_confirmation}
+                                        onChange={(e) => setData('password_confirmation', e.target.value)}
+                                        placeholder="••••••••"
+                                        className="pl-9"
+                                    />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -361,70 +384,60 @@ export default function Create({ roles, permissions }: Props) {
                     ===================================================== */}
 
                     <Card className="border shadow-xs">
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <ShieldCheck className="size-5 text-primary" />
-                                    Roles
-                                </CardTitle>
-                                {data.roles.length > 0 && (
-                                    <Badge variant="secondary" className="font-semibold">
-                                        {data.roles.length} {data.roles.length === 1 ? 'rol asignado' : 'roles asignados'}
-                                    </Badge>
+                        <CardHeader className="bg-muted/20 space-y-4 border-b pb-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="space-y-1">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <ShieldCheck className="text-primary size-5" />
+                                        Roles
+                                    </CardTitle>
+
+                                    <CardDescription>
+                                        Selecciona los roles que tendrá este usuario. Los roles proporcionan permisos base automáticamente.
+                                    </CardDescription>
+                                </div>
+
+                                {roles.length > 0 && (
+                                    <div className="bg-primary/10 text-primary inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium">
+                                        <ShieldCheck className="size-3.5" />
+                                        {data.roles.length} de {roles.length} {roles.length === 1 ? 'rol' : 'roles'}
+                                    </div>
                                 )}
                             </div>
-
-                            <CardDescription>
-                                Selecciona los roles que tendrá este usuario. Los roles proporcionan permisos base automáticamente.
-                            </CardDescription>
                         </CardHeader>
 
                         <CardContent>
                             {roles.length === 0 ? (
-                                <div className="rounded-xl border border-dashed p-8 text-center bg-muted/10">
+                                <div className="bg-muted/10 rounded-xl border border-dashed p-8 text-center">
                                     <Shield className="text-muted-foreground mx-auto mb-2 size-8 opacity-40" />
                                     <p className="text-muted-foreground text-sm">No hay roles disponibles.</p>
                                 </div>
                             ) : (
-                                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                    {roles.map((role) => {
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {roles.map((role, index) => {
                                         const checked = data.roles.includes(role.id);
+                                        const color = permissionGroupColors[index % permissionGroupColors.length];
 
                                         return (
                                             <label
                                                 key={role.id}
                                                 className={cn(
-                                                    'group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3.5 transition-all select-none',
+                                                    'group relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-4 transition-all duration-150 select-none',
                                                     checked
-                                                        ? 'border-primary bg-primary/5 shadow-xs ring-1 ring-primary/20'
-                                                        : 'border-border/70 bg-card hover:bg-muted/40 hover:border-border',
+                                                        ? `shadow-xs ring-1 ${color.selected}`
+                                                        : `border-border/60 ${color.card} hover:border-border/80`,
                                                 )}
                                             >
-                                                <div className="flex items-center gap-3 min-w-0">
-                                                    <div
-                                                        className={cn(
-                                                            'flex size-8 shrink-0 items-center justify-center rounded-lg border transition-colors',
-                                                            checked
-                                                                ? 'border-primary/40 bg-primary/10 text-primary'
-                                                                : 'border-muted-foreground/20 bg-muted/40 text-muted-foreground group-hover:text-foreground',
-                                                        )}
-                                                    >
-                                                        <Shield className="size-4" />
+                                                <div className="flex min-w-0 items-center gap-3">
+                                                    <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${color.icon}`}>
+                                                        <Shield className="size-4.5" />
                                                     </div>
-                                                    <span
-                                                        className={cn(
-                                                            'truncate text-sm font-medium',
-                                                            checked && 'text-primary font-semibold',
-                                                        )}
-                                                    >
+                                                    <span className={cn('min-w-0 truncate text-sm font-medium', checked && 'font-semibold')}>
                                                         {role.name}
                                                     </span>
                                                 </div>
 
-                                                <Checkbox
-                                                    checked={checked}
-                                                    onCheckedChange={(value) => toggleRole(role.id, value === true)}
-                                                />
+                                                <Checkbox checked={checked} onCheckedChange={(value) => toggleRole(role.id, value === true)} />
                                             </label>
                                         );
                                     })}
@@ -438,138 +451,147 @@ export default function Create({ roles, permissions }: Props) {
                     ===================================================== */}
 
                     <Card className="border shadow-xs">
-                        <CardHeader className="space-y-4 pb-4">
+                        <CardHeader className="bg-muted/20 space-y-4 border-b pb-4">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div className="space-y-1">
                                     <CardTitle className="flex items-center gap-2 text-lg">
-                                        <Users className="size-5 text-primary" />
+                                        <Users className="text-primary size-5" />
                                         Permisos directos
                                     </CardTitle>
 
                                     <CardDescription>
-                                        Asigna permisos específicos al usuario. Los permisos denegados (<strong>-</strong>) anulan lo que otorguen los roles.
+                                        Asigna permisos específicos al usuario. Los permisos denegados (<strong>-</strong>) anulan lo que otorguen los
+                                        roles.
                                     </CardDescription>
                                 </div>
 
-                                {/* Buscador de permisos */}
-                                <div className="relative w-full sm:w-64 shrink-0">
-                                    <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2 pointer-events-none" />
-                                    <Input
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder="Buscar permiso o módulo..."
-                                        className="h-9 pl-9 pr-8 text-xs rounded-lg"
-                                    />
-                                    {searchQuery && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setSearchQuery('')}
-                                            className="text-muted-foreground hover:text-foreground absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded cursor-pointer"
-                                        >
-                                            <X className="size-3.5" />
-                                        </button>
-                                    )}
+                                <div className="flex w-full shrink-0 flex-col items-stretch gap-2 sm:w-auto sm:items-end">
+                                    {/* Contador de asignaciones */}
+                                    <div className="bg-primary/10 text-primary inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium">
+                                        <CheckCircle2 className="size-3.5" />
+                                        {data.permissions.length + data.denied_permissions.length} de {permissions.length} asignados
+                                    </div>
+
+                                    {/* Buscador de permisos */}
+                                    <div className="relative w-full sm:w-64">
+                                        <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                                        <Input
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            placeholder="Buscar permiso o módulo..."
+                                            className="h-9 rounded-lg pr-8 pl-9 text-xs"
+                                        />
+                                        {searchQuery && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setSearchQuery('')}
+                                                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer rounded p-0.5"
+                                            >
+                                                <X className="size-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
                             <TriStateLegend
                                 allowedCount={data.permissions.length}
                                 deniedCount={data.denied_permissions.length}
-                                noneCount={Math.max(
-                                    0,
-                                    permissions.length - data.permissions.length - data.denied_permissions.length,
-                                )}
+                                noneCount={Math.max(0, permissions.length - data.permissions.length - data.denied_permissions.length)}
                                 onAllowAll={permissions.length > 0 ? allowAll : undefined}
                                 onDenyAll={permissions.length > 0 ? denyAll : undefined}
-                                onResetAll={
-                                    data.permissions.length > 0 || data.denied_permissions.length > 0
-                                        ? resetAll
-                                        : undefined
-                                }
+                                onResetAll={data.permissions.length > 0 || data.denied_permissions.length > 0 ? resetAll : undefined}
                             />
                         </CardHeader>
 
                         <CardContent>
                             {Object.keys(filteredGroupedPermissions).length === 0 ? (
-                                <div className="rounded-xl border border-dashed p-8 text-center bg-muted/10">
+                                <div className="bg-muted/10 rounded-xl border border-dashed p-8 text-center">
                                     <Users className="text-muted-foreground mx-auto mb-2 size-8 opacity-40" />
                                     <p className="text-muted-foreground text-sm font-medium">
-                                        {searchQuery
-                                            ? `No se encontraron permisos para "${searchQuery}".`
-                                            : 'No hay permisos disponibles.'}
+                                        {searchQuery ? `No se encontraron permisos para "${searchQuery}".` : 'No hay permisos disponibles.'}
                                     </p>
                                     {searchQuery && (
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => setSearchQuery('')}
-                                            className="mt-3 text-xs"
-                                        >
+                                        <Button type="button" variant="ghost" size="sm" onClick={() => setSearchQuery('')} className="mt-3 text-xs">
                                             Limpiar filtro
                                         </Button>
                                     )}
                                 </div>
                             ) : (
                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                    {Object.entries(filteredGroupedPermissions).map(([group, groupPermissions]) => {
-                                        const groupAllowedCount = groupPermissions.filter((p) =>
-                                            data.permissions.includes(p.id),
-                                        ).length;
-                                        const groupDeniedCount = groupPermissions.filter((p) =>
-                                            data.denied_permissions.includes(p.id),
-                                        ).length;
+                                    {Object.entries(filteredGroupedPermissions).map(([group, groupPermissions], index) => {
+                                        const color = permissionGroupColors[index % permissionGroupColors.length];
+                                        const groupAllowedCount = groupPermissions.filter((p) => data.permissions.includes(p.id)).length;
+                                        const groupDeniedCount = groupPermissions.filter((p) => data.denied_permissions.includes(p.id)).length;
 
                                         return (
                                             <Card
                                                 key={group}
-                                                className="shadow-2xs overflow-hidden border transition-all duration-150 hover:shadow-xs"
+                                                className="overflow-hidden border shadow-2xs transition-all duration-150 hover:shadow-xs"
                                             >
-                                                <CardHeader className="border-b bg-muted/30 px-3.5 py-2.5">
+                                                <CardHeader className={`border-b px-4 py-3 ${color.card}`}>
+                                                    <div className="flex min-w-0 items-center gap-2">
+                                                        <span className={`flex size-6 shrink-0 items-center justify-center rounded-md ${color.icon}`}>
+                                                            <KeyRound className="size-3.5" />
+                                                        </span>
+                                                        <span
+                                                            className="text-foreground min-w-0 flex-1 text-sm leading-snug font-bold tracking-wide uppercase"
+                                                            title={group.replace(/_/g, ' ')}
+                                                        >
+                                                            {group.replace(/_/g, ' ')}
+                                                        </span>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-muted-foreground border-border/60 h-4.5 shrink-0 px-1.5 text-[11px] font-semibold"
+                                                        >
+                                                            {groupPermissions.length}
+                                                        </Badge>
+                                                    </div>
+
                                                     <div className="flex items-center justify-between gap-2">
-                                                        <div className="flex items-center gap-1.5 min-w-0">
-                                                            <KeyRound className="size-3.5 text-muted-foreground shrink-0" />
-                                                            <span className="truncate text-xs font-bold tracking-tight text-foreground uppercase">
-                                                                {group.replace(/_/g, ' ')}
-                                                            </span>
-                                                            <Badge
-                                                                variant="outline"
-                                                                className="h-4 px-1.5 text-[10px] font-normal text-muted-foreground"
-                                                            >
-                                                                {groupPermissions.length}
-                                                            </Badge>
+                                                        <div className="flex items-center gap-1.5">
+                                                            {groupAllowedCount > 0 && (
+                                                                <span className="py-0.2 inline-flex items-center gap-0.5 rounded-md bg-emerald-500/15 px-1.5 text-[10px] font-semibold text-emerald-800 dark:text-emerald-300">
+                                                                    +{groupAllowedCount} permitido{groupAllowedCount > 1 ? 's' : ''}
+                                                                </span>
+                                                            )}
+                                                            {groupDeniedCount > 0 && (
+                                                                <span className="py-0.2 inline-flex items-center gap-0.5 rounded-md bg-rose-500/15 px-1.5 text-[10px] font-semibold text-rose-800 dark:text-rose-300">
+                                                                    -{groupDeniedCount} denegado{groupDeniedCount > 1 ? 's' : ''}
+                                                                </span>
+                                                            )}
                                                         </div>
 
-                                                        <div className="flex items-center gap-1 shrink-0">
+                                                        <div className="flex shrink-0 items-center gap-1">
                                                             <Button
                                                                 type="button"
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                className="h-6 px-1.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-800"
+                                                                className="h-6 px-1.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-500/10 hover:text-emerald-800 dark:text-emerald-400"
                                                                 onClick={() => setGroupStatus(groupPermissions, 'allow')}
                                                                 title="Permitir todos (+)"
                                                             >
                                                                 <Plus className="size-3 stroke-[3]" />
-                                                                <span className="hidden sm:inline ml-0.5">Todos</span>
+                                                                <span className="ml-0.5 hidden sm:inline">Todos</span>
                                                             </Button>
 
                                                             <Button
                                                                 type="button"
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                className="h-6 px-1.5 text-[10px] font-semibold text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 hover:text-rose-800"
+                                                                className="h-6 px-1.5 text-[10px] font-semibold text-rose-700 hover:bg-rose-500/10 hover:text-rose-800 dark:text-rose-400"
                                                                 onClick={() => setGroupStatus(groupPermissions, 'deny')}
                                                                 title="Denegar todos (-)"
                                                             >
                                                                 <Minus className="size-3 stroke-[3]" />
-                                                                <span className="hidden sm:inline ml-0.5">Todos</span>
+                                                                <span className="ml-0.5 hidden sm:inline">Todos</span>
                                                             </Button>
 
                                                             <Button
                                                                 type="button"
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                                                className="text-muted-foreground hover:text-foreground h-6 w-6 p-0"
                                                                 onClick={() => setGroupStatus(groupPermissions, 'none')}
                                                                 title="Vaciar categoría"
                                                             >
@@ -577,21 +599,6 @@ export default function Create({ roles, permissions }: Props) {
                                                             </Button>
                                                         </div>
                                                     </div>
-
-                                                    {(groupAllowedCount > 0 || groupDeniedCount > 0) && (
-                                                        <div className="flex items-center gap-1.5 pt-1">
-                                                            {groupAllowedCount > 0 && (
-                                                                <span className="inline-flex items-center gap-0.5 rounded-md bg-emerald-500/15 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-800 dark:text-emerald-300">
-                                                                    +{groupAllowedCount} permitido{groupAllowedCount > 1 ? 's' : ''}
-                                                                </span>
-                                                            )}
-                                                            {groupDeniedCount > 0 && (
-                                                                <span className="inline-flex items-center gap-0.5 rounded-md bg-rose-500/15 px-1.5 py-0.2 text-[10px] font-semibold text-rose-800 dark:text-rose-300">
-                                                                    -{groupDeniedCount} denegado{groupDeniedCount > 1 ? 's' : ''}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    )}
                                                 </CardHeader>
 
                                                 <CardContent className="space-y-1.5 p-2.5">
@@ -602,38 +609,31 @@ export default function Create({ roles, permissions }: Props) {
                                                             <div
                                                                 key={permission.id}
                                                                 onClick={() => {
-                                                                    const next =
-                                                                        status === 'none'
-                                                                            ? 'allow'
-                                                                            : status === 'allow'
-                                                                              ? 'deny'
-                                                                              : 'none';
+                                                                    const next = status === 'none' ? 'allow' : status === 'allow' ? 'deny' : 'none';
                                                                     setPermissionStatus(permission.id, next);
                                                                 }}
                                                                 className={cn(
-                                                                    'group/item flex items-center justify-between gap-2 rounded-lg border p-2 transition-all cursor-pointer select-none text-xs',
+                                                                    'group/item flex cursor-pointer items-center justify-between gap-2 rounded-lg border p-2 text-xs transition-all select-none',
                                                                     status === 'allow' &&
-                                                                        'border-emerald-500/35 bg-emerald-500/5 dark:bg-emerald-950/20 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500/50',
+                                                                        'border-emerald-500/35 bg-emerald-500/5 text-emerald-950 hover:border-emerald-500/50 dark:bg-emerald-950/20 dark:text-emerald-100',
                                                                     status === 'deny' &&
-                                                                        'border-rose-500/35 bg-rose-500/5 dark:bg-rose-950/20 text-rose-950 dark:text-rose-100 hover:border-rose-500/50',
+                                                                        'border-rose-500/35 bg-rose-500/5 text-rose-950 hover:border-rose-500/50 dark:bg-rose-950/20 dark:text-rose-100',
                                                                     status === 'none' &&
                                                                         'border-border/60 bg-card hover:bg-muted/40 hover:border-border',
                                                                 )}
                                                             >
-                                                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                                                <div className="flex min-w-0 flex-1 items-center gap-2.5">
                                                                     <TriStateCheckbox
                                                                         status={status}
-                                                                        onChange={(next) =>
-                                                                            setPermissionStatus(permission.id, next)
-                                                                        }
+                                                                        onChange={(next) => setPermissionStatus(permission.id, next)}
                                                                     />
                                                                     <span
                                                                         className={cn(
-                                                                            'truncate capitalize font-medium',
+                                                                            'truncate font-medium capitalize',
                                                                             status === 'allow' &&
-                                                                                'text-emerald-900 dark:text-emerald-300 font-semibold',
+                                                                                'font-semibold text-emerald-900 dark:text-emerald-300',
                                                                             status === 'deny' &&
-                                                                                'text-rose-900 dark:text-rose-300 font-semibold line-through decoration-rose-500/50',
+                                                                                'font-semibold text-rose-900 line-through decoration-rose-500/50 dark:text-rose-300',
                                                                             status === 'none' && 'text-foreground',
                                                                         )}
                                                                     >
@@ -658,19 +658,19 @@ export default function Create({ roles, permissions }: Props) {
                         RESUMEN / ACCIONES
                     ===================================================== */}
 
-                    <Card className="sticky bottom-4 z-10 border shadow-lg bg-card/95 backdrop-blur-md">
+                    <Card className="bg-card/95 sticky bottom-4 z-10 border shadow-lg backdrop-blur-md">
                         <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex flex-wrap items-center gap-2 text-xs">
                                 <span className="text-muted-foreground font-medium">Configuración:</span>
 
-                                <Badge variant="outline" className="font-semibold gap-1">
-                                    <Shield className="size-3 text-primary" />
+                                <Badge variant="outline" className="gap-1 font-semibold">
+                                    <Shield className="text-primary size-3" />
                                     {data.roles.length} {data.roles.length === 1 ? 'rol' : 'roles'}
                                 </Badge>
 
                                 <Badge
                                     variant="outline"
-                                    className="font-semibold border-emerald-500/30 bg-emerald-500/5 text-emerald-800 dark:text-emerald-300 gap-1"
+                                    className="gap-1 border-emerald-500/30 bg-emerald-500/5 font-semibold text-emerald-800 dark:text-emerald-300"
                                 >
                                     <Plus className="size-3 stroke-[3]" />
                                     {data.permissions.length} permitidos
@@ -679,7 +679,7 @@ export default function Create({ roles, permissions }: Props) {
                                 {data.denied_permissions.length > 0 && (
                                     <Badge
                                         variant="outline"
-                                        className="font-semibold border-rose-500/30 bg-rose-500/5 text-rose-800 dark:text-rose-300 gap-1"
+                                        className="gap-1 border-rose-500/30 bg-rose-500/5 font-semibold text-rose-800 dark:text-rose-300"
                                     >
                                         <Minus className="size-3 stroke-[3]" />
                                         {data.denied_permissions.length} denegados
@@ -687,12 +687,12 @@ export default function Create({ roles, permissions }: Props) {
                                 )}
                             </div>
 
-                            <div className="flex flex-col-reverse gap-2.5 sm:flex-row shrink-0">
+                            <div className="flex shrink-0 flex-col-reverse gap-2.5 sm:flex-row">
                                 <Button type="button" variant="outline" asChild>
                                     <Link href="/usuarios">Cancelar</Link>
                                 </Button>
 
-                                <Button type="submit" disabled={processing} className="shadow-xs font-semibold">
+                                <Button type="submit" disabled={processing} className="font-semibold shadow-xs">
                                     {processing ? (
                                         <>
                                             <Loader2 className="mr-2 size-4 animate-spin" />

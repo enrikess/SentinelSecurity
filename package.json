@@ -1,4 +1,5 @@
 {
+    "name": "sentinel-security",
     "private": true,
     "type": "module",
     "scripts": {

@@ -1,37 +1,32 @@
 <?php
 
+use App\Http\Controllers\Security\FailedAttemptController;
 use App\Http\Controllers\Security\MenuController;
 use App\Http\Controllers\Security\PermissionController;
 use App\Http\Controllers\Security\RoleController;
+use App\Http\Controllers\Security\SessionController;
 use App\Http\Controllers\Security\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/security/menus', [MenuController::class, 'index'])
-        ->name('security.menus.index');
-
-    Route::get('/security/menus', [MenuController::class, 'index'])
+    Route::get('/menus', [MenuController::class, 'index'])
         ->middleware('permission:menus.listar')
         ->name('menus.index');
 
-    Route::get('/security/menus/create', [MenuController::class, 'create'])
-        ->middleware('permission:menus.crear')
-        ->name('menus.create');
-
-    Route::post('/security/menus', [MenuController::class, 'store'])
+    Route::post('/menus', [MenuController::class, 'store'])
         ->middleware('permission:menus.crear')
         ->name('menus.store');
 
-    Route::get('/security/menus/{menu}/edit', [MenuController::class, 'edit'])
+    Route::patch('/menus/{menu}/move', [MenuController::class, 'move'])
         ->middleware('permission:menus.editar')
-        ->name('menus.edit');
+        ->name('menus.move');
 
-    Route::put('/security/menus/{menu}', [MenuController::class, 'update'])
+    Route::put('/menus/{menu}', [MenuController::class, 'update'])
         ->middleware('permission:menus.editar')
         ->name('menus.update');
 
-    Route::delete('/security/menus/{menu}', [MenuController::class, 'destroy'])
+    Route::delete('/menus/{menu}', [MenuController::class, 'destroy'])
         ->middleware('permission:menus.eliminar')
         ->name('menus.destroy');
 
@@ -109,4 +104,34 @@ Route::middleware('auth')->group(function () {
     Route::delete('/permisos/{permiso}', [PermissionController::class, 'destroy'])
         ->middleware('permission:permisos.eliminar')
         ->name('permisos.destroy');
+
+    // Rutas para la gestión de sesiones
+    Route::get('/sesiones', [SessionController::class, 'index'])
+        ->middleware('permission:sesiones.listar')
+        ->name('sesiones.index');
+
+    Route::post('/sesiones/revocar-todas', [SessionController::class, 'revokeAll'])
+        ->middleware('permission:sesiones.revocar')
+        ->name('sesiones.revoke-all');
+
+    Route::post('/sesiones/{session}/revocar', [SessionController::class, 'revoke'])
+        ->middleware('permission:sesiones.revocar')
+        ->name('sesiones.revoke');
+
+    // Rutas para intentos fallidos y bloqueos
+    Route::get('/intentos-fallidos', [FailedAttemptController::class, 'index'])
+        ->middleware('permission:intentos_fallidos.listar')
+        ->name('intentos-fallidos.index');
+
+    Route::get('/intentos-fallidos/estado', [FailedAttemptController::class, 'status'])
+        ->middleware('permission:intentos_fallidos.desbloquear')
+        ->name('intentos-fallidos.status');
+
+    Route::post('/intentos-fallidos/desbloquear', [FailedAttemptController::class, 'unlock'])
+        ->middleware('permission:intentos_fallidos.desbloquear')
+        ->name('intentos-fallidos.unlock');
+
+    Route::delete('/intentos-fallidos/limpiar', [FailedAttemptController::class, 'clearHistory'])
+        ->middleware('permission:intentos_fallidos.limpiar')
+        ->name('intentos-fallidos.clear');
 });

@@ -20,6 +20,38 @@ class MenuService
         return $this->buildTree($menus, $user);
     }
 
+    /**
+     * Árbol completo de menús, sin filtrar por
+     * permisos del usuario. Se usa en la gestión.
+     */
+    public function getFullTree(): Collection
+    {
+        $menus = Menu::query()
+            ->with('permission')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        return $this->buildFullTree($menus);
+    }
+
+    private function buildFullTree(
+        EloquentCollection $menus,
+        ?int $parentId = null
+    ): Collection {
+        return $menus
+            ->where('parent_id', $parentId)
+            ->map(function (Menu $menu) use ($menus) {
+                $menu->setRelation(
+                    'children',
+                    $this->buildFullTree($menus, $menu->id)
+                );
+
+                return $menu;
+            })
+            ->values();
+    }
+
     private function buildTree(
         EloquentCollection $menus,
         User $user,

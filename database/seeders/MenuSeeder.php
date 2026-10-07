@@ -269,5 +269,29 @@ class MenuSeeder extends Seeder
             'is_active' => true,
             'permission_id' => $permissions['configuracion.ver'],
         ]);
+
+        Menu::create([
+            'parent_id' => $configuracion->id,
+            'name' => 'Sesiones',
+            'slug' => 'sesiones',
+            'type' => MenuType::MENU,
+            'route' => '/sesiones',
+            'icon' => 'monitor-smartphone',
+            'sort_order' => 2,
+            'is_active' => true,
+            'permission_id' => $permissions['sesiones.listar'],
+        ]);
+
+        Menu::create([
+            'parent_id' => $configuracion->id,
+            'name' => 'Intentos Fallidos',
+            'slug' => 'intentos-fallidos',
+            'type' => MenuType::MENU,
+            'route' => '/intentos-fallidos',
+            'icon' => 'shield-alert',
+            'sort_order' => 3,
+            'is_active' => true,
+            'permission_id' => $permissions['intentos_fallidos.listar'],
+        ]);
     }
 }
